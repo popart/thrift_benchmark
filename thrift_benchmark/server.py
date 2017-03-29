@@ -11,7 +11,6 @@ from thrift.server import TServer
 
 class EchoHandler(object):
     def echo(self, s1):
-        print 'caught an echo: %s' % s1
         return s1
 
 if __name__ == '__main__':
@@ -27,5 +26,6 @@ if __name__ == '__main__':
 
     # You could do one of these for a multithreaded server
     # server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)
-    # server = TServer.TThreadPoolServer(...)
+    # server = TServer.TThreadPoolServer(...) <- seems to require some cleanup
+    # right now, for serial test, threaded servers are slightly slower
 
