@@ -1,6 +1,9 @@
 import sys
 sys.path.append('gen-py')
 
+from collections import defaultdict
+import time
+
 from echo import Echo
 
 from thrift import Thrift
@@ -9,9 +12,24 @@ from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 
+
 class EchoHandler(object):
-    def echo(self, s1):
-        return s1
+    c = {}
+
+    def noop(self):
+        t = int(time.time() % 1000)
+
+        if t not in self.c:
+            self.c[t] = 0
+
+        self.c[t] += 1
+
+    def count(self):
+        return self.c
+
+    def reset(self):
+        self.c = {}
+        return True
 
 if __name__ == '__main__':
     handler = EchoHandler()

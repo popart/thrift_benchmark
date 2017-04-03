@@ -1,8 +1,6 @@
 import sys
 sys.path.append('gen-py')
 
-from multiprocessing import Process
-
 from echo import Echo
 
 from thrift import Thrift
@@ -11,6 +9,7 @@ from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 
 import timeit
+import gevent
 
 if __name__ == '__main__':
     # Make socket
@@ -25,18 +24,26 @@ if __name__ == '__main__':
     # Create a client to use the protocol encoder
     client = Echo.Client(protocol)
 
+    def worker():
+        try:
+            client.noop()
+        except:
+            print 'worker failed'
+
     # Connect!
     transport.open()
 
-    def run():
-        client.echo('hello world')
-
     for n in [1000, 10000, 100000]:
-        start_time = timeit.default_timer()
+        client.reset()
+
         for _ in xrange(n):
-            Process(target=run)
-        elapsed_time = timeit.default_timer() - start_time
-        print "elapsed: %s s for %s reqs" % (elapsed_time, n)
+            gevent.spawn(worker)
+        print "n: %s" % n
+
+        gevent.sleep(2)
+
+        cs = client.count()
+        print sorted(cs.items())
 
     transport.close()
 

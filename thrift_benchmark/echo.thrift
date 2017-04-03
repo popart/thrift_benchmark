@@ -20,6 +20,8 @@ namespace py echo
 
 service Echo {
 
-   string echo(1:string s1),
+   void noop(),
+   map<i16, i16> count(),
+   bool reset()
 
 }

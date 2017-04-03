@@ -27,11 +27,15 @@ if __name__ == '__main__':
     transport.open()
 
     for n in [1000, 10000, 100000]:
-        start_time = timeit.default_timer()
+        client.reset()
+
         for _ in xrange(n):
-            client.echo('hello world')
-        elapsed_time = timeit.default_timer() - start_time
-        print "elapsed: %s s for %s reqs" % (elapsed_time, n)
+            client.noop()
+
+        print "n: %s " % n
+
+        cs = client.count()
+        print cs
 
     transport.close()
 
