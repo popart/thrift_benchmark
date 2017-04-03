@@ -35,7 +35,7 @@ if __name__ == '__main__':
         print "n: %s " % n
 
         cs = client.count()
-        print cs
+        print sorted(cs.items())
 
     transport.close()
 
