@@ -32,7 +32,6 @@ def worker(n):
     client.reset()
 
     for _ in xrange(n):
-        client.noop()
         client.add(Packet(
             ride_id='ride_0', 
             workout_id='workout_0', 

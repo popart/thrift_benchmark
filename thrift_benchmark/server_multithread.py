@@ -19,7 +19,7 @@ class EchoHandler(object):
     c = {}
     x = None
 
-    def noop(self):
+    def inc_count():
         t = int(time.time() % 1000)
 
         if t not in self.c:
@@ -27,9 +27,12 @@ class EchoHandler(object):
 
         self.c[t] += 1
 
+    def noop(self):
+        inc_count()
+
     def add(self, p):
         x = p.workout_id 
-        return
+        inc_count()
 
     def count(self):
         return self.c
@@ -46,7 +49,7 @@ if __name__ == '__main__':
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 
     server = TServer.TThreadPoolServer(processor, transport, tfactory, pfactory)
-    #server.setNumThreads(4)
+    server.setNumThreads(4)
     print "starting server"
     server.serve()
 
