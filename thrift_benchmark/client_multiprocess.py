@@ -44,7 +44,7 @@ if __name__ == '__main__':
         pool = Pool(processes=n)
         ress = []
         for i in xrange(n):
-            ress.append(pool.apply_async(worker, (100000,)))
+            ress.append(pool.apply_async(worker, (50000,)))
 
         pool.close()
         pool.join()
