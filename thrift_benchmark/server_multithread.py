@@ -5,6 +5,7 @@ from collections import defaultdict
 import time
 
 from echo import Echo
+from echo.ttypes import Packet
 
 from thrift import Thrift
 from thrift.transport import TSocket
@@ -13,8 +14,10 @@ from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 
 
+
 class EchoHandler(object):
     c = {}
+    x = None
 
     def noop(self):
         t = int(time.time() % 1000)
@@ -23,6 +26,10 @@ class EchoHandler(object):
             self.c[t] = 0
 
         self.c[t] += 1
+
+    def add(self, p):
+        x = p.workout_id 
+        return
 
     def count(self):
         return self.c
@@ -39,7 +46,7 @@ if __name__ == '__main__':
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 
     server = TServer.TThreadPoolServer(processor, transport, tfactory, pfactory)
-    server.setNumThreads(4)
+    #server.setNumThreads(4)
     print "starting server"
     server.serve()
 

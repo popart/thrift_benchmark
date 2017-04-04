@@ -4,6 +4,7 @@ sys.path.append('gen-py')
 from multiprocessing import Pool
 
 from echo import Echo
+from echo.ttypes import Packet
 
 from thrift import Thrift
 from thrift.transport import TSocket
@@ -32,6 +33,12 @@ def worker(n):
 
     for _ in xrange(n):
         client.noop()
+        client.add(Packet(
+            ride_id='ride_0', 
+            workout_id='workout_0', 
+            seconds_since_pedaling_start=10,
+            total_work=5.5))
+
 
     cs = client.count()
 

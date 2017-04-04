@@ -18,9 +18,17 @@
 
 namespace py echo
 
+struct Packet {
+    1: required string ride_id;
+    2: required string workout_id;
+    3: required i16 seconds_since_pedaling_start;
+    4: required double total_work;
+}
+
 service Echo {
 
    void noop(),
+   void add(Packet p),
    map<i16, i16> count(),
    bool reset()
 

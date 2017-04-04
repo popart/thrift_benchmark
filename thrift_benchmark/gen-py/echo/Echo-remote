@@ -25,6 +25,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('')
     print('Functions:')
     print('  void noop()')
+    print('  void add(Packet p)')
     print('   count()')
     print('  bool reset()')
     print('')
@@ -111,6 +112,12 @@ if cmd == 'noop':
         print('noop requires 0 args')
         sys.exit(1)
     pp.pprint(client.noop())
+
+elif cmd == 'add':
+    if len(args) != 1:
+        print('add requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.add(eval(args[0]),))
 
 elif cmd == 'count':
     if len(args) != 0:
