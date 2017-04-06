@@ -1,6 +1,7 @@
 import sys
 sys.path.append('gen-py')
 
+import time
 from multiprocessing import Pool
 
 from echo import Echo
@@ -11,9 +12,8 @@ from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 
-import timeit
 
-def worker(n):
+def create_client():
     # Make socket
     transport = TSocket.TSocket('localhost', 9090)
 
@@ -26,36 +26,56 @@ def worker(n):
     # Create a client to use the protocol encoder
     client = Echo.Client(protocol)
 
+    return (client, transport)
+
+def worker(rps):
+    client, transport = create_client()
+
     # Connect!
     transport.open()
 
-    client.reset()
+    for s in xrange(5):
+        start = time.time()
 
-    for _ in xrange(n):
-        client.add(Packet(
-            ride_id='ride_0', 
-            workout_id='workout_0', 
-            seconds_since_pedaling_start=10,
-            total_work=5.5))
+        for _ in xrange(rps):
+            client.echo('hello world')
 
+        elapsed = time.time() - start
+        if elapsed > 1:
+            return False
 
-    cs = client.count()
+        time.sleep(1 - elapsed)
 
     transport.close()
-    return max(cs.values())
+    return True
 
 if __name__ == '__main__':
 
     for n in xrange(1,4):
-        pool = Pool(processes=n)
-        ress = []
-        for i in xrange(n):
-            ress.append(pool.apply_async(worker, (50000,)))
+        for rps in xrange(1000, 15000, 1000):
+            # reset the server counts
+            client, transport = create_client()
+            transport.open()
+            client.reset()
 
-        pool.close()
-        pool.join()
+            #run some load tests
+            pool = Pool(processes=n)
+            ress = []
+            for _ in xrange(n):
+                ress.append(pool.apply_async(worker, (rps,)))
 
-        print "clients: %d" % n
-        for res in ress:
-            print res.get()
+            pool.close()
+            pool.join()
+
+            # get the server counts
+            cs = client.count()
+            transport.close()
+
+            if all(res.get() for res in ress):
+                print "** PASS: clients: %d, rps: %d **" % (n, rps)
+                print cs
+            else:
+                print '-- FAIL: clients: %d, rps: %d --' % (n, rps)
+                print cs
+                break
 

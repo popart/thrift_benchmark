@@ -16,7 +16,11 @@ from thrift.transport import TTransport
 
 
 class Iface(object):
-    def noop(self):
+    def echo(self, s):
+        """
+        Parameters:
+         - s
+        """
         pass
 
     def add(self, p):
@@ -40,18 +44,23 @@ class Client(Iface):
             self._oprot = oprot
         self._seqid = 0
 
-    def noop(self):
-        self.send_noop()
-        self.recv_noop()
+    def echo(self, s):
+        """
+        Parameters:
+         - s
+        """
+        self.send_echo(s)
+        return self.recv_echo()
 
-    def send_noop(self):
-        self._oprot.writeMessageBegin('noop', TMessageType.CALL, self._seqid)
-        args = noop_args()
+    def send_echo(self, s):
+        self._oprot.writeMessageBegin('echo', TMessageType.CALL, self._seqid)
+        args = echo_args()
+        args.s = s
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
 
-    def recv_noop(self):
+    def recv_echo(self):
         iprot = self._iprot
         (fname, mtype, rseqid) = iprot.readMessageBegin()
         if mtype == TMessageType.EXCEPTION:
@@ -59,10 +68,12 @@ class Client(Iface):
             x.read(iprot)
             iprot.readMessageEnd()
             raise x
-        result = noop_result()
+        result = echo_result()
         result.read(iprot)
         iprot.readMessageEnd()
-        return
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "echo failed: unknown result")
 
     def add(self, p):
         """
@@ -150,7 +161,7 @@ class Processor(Iface, TProcessor):
     def __init__(self, handler):
         self._handler = handler
         self._processMap = {}
-        self._processMap["noop"] = Processor.process_noop
+        self._processMap["echo"] = Processor.process_echo
         self._processMap["add"] = Processor.process_add
         self._processMap["count"] = Processor.process_count
         self._processMap["reset"] = Processor.process_reset
@@ -170,13 +181,13 @@ class Processor(Iface, TProcessor):
             self._processMap[name](self, seqid, iprot, oprot)
         return True
 
-    def process_noop(self, seqid, iprot, oprot):
-        args = noop_args()
+    def process_echo(self, seqid, iprot, oprot):
+        args = echo_args()
         args.read(iprot)
         iprot.readMessageEnd()
-        result = noop_result()
+        result = echo_result()
         try:
-            self._handler.noop()
+            result.success = self._handler.echo(args.s)
             msg_type = TMessageType.REPLY
         except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
             raise
@@ -184,7 +195,7 @@ class Processor(Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             logging.exception(ex)
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-        oprot.writeMessageBegin("noop", msg_type, seqid)
+        oprot.writeMessageBegin("echo", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -249,10 +260,16 @@ class Processor(Iface, TProcessor):
 # HELPER FUNCTIONS AND STRUCTURES
 
 
-class noop_args(object):
+class echo_args(object):
+    """
+    Attributes:
+     - s
+    """
 
-    thrift_spec = (
-    )
+    thrift_spec = None
+
+    def __init__(self, s=None,):
+        self.s = s
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -263,6 +280,11 @@ class noop_args(object):
             (fname, ftype, fid) = iprot.readFieldBegin()
             if ftype == TType.STOP:
                 break
+            if fid == -1:
+                if ftype == TType.STRING:
+                    self.s = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -272,7 +294,11 @@ class noop_args(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
-        oprot.writeStructBegin('noop_args')
+        oprot.writeStructBegin('echo_args')
+        if self.s is not None:
+            oprot.writeFieldBegin('s', TType.STRING, -1)
+            oprot.writeString(self.s.encode('utf-8') if sys.version_info[0] == 2 else self.s)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
@@ -291,10 +317,18 @@ class noop_args(object):
         return not (self == other)
 
 
-class noop_result(object):
+class echo_result(object):
+    """
+    Attributes:
+     - success
+    """
 
     thrift_spec = (
+        (0, TType.STRING, 'success', 'UTF8', None, ),  # 0
     )
+
+    def __init__(self, success=None,):
+        self.success = success
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -305,6 +339,11 @@ class noop_result(object):
             (fname, ftype, fid) = iprot.readFieldBegin()
             if ftype == TType.STOP:
                 break
+            if fid == 0:
+                if ftype == TType.STRING:
+                    self.success = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -314,7 +353,11 @@ class noop_result(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, (self.__class__, self.thrift_spec)))
             return
-        oprot.writeStructBegin('noop_result')
+        oprot.writeStructBegin('echo_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.STRING, 0)
+            oprot.writeString(self.success.encode('utf-8') if sys.version_info[0] == 2 else self.success)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 

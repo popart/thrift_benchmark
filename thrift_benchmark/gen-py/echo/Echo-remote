@@ -24,7 +24,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('Usage: ' + sys.argv[0] + ' [-h host[:port]] [-u url] [-f[ramed]] [-s[sl]] [-novalidate] [-ca_certs certs] [-keyfile keyfile] [-certfile certfile] function [arg1 [arg2...]]')
     print('')
     print('Functions:')
-    print('  void noop()')
+    print('  string echo(string s)')
     print('  void add(Packet p)')
     print('   count()')
     print('  bool reset()')
@@ -107,11 +107,11 @@ protocol = TBinaryProtocol(transport)
 client = Echo.Client(protocol)
 transport.open()
 
-if cmd == 'noop':
-    if len(args) != 0:
-        print('noop requires 0 args')
+if cmd == 'echo':
+    if len(args) != 1:
+        print('echo requires 1 args')
         sys.exit(1)
-    pp.pprint(client.noop())
+    pp.pprint(client.echo(args[0],))
 
 elif cmd == 'add':
     if len(args) != 1:

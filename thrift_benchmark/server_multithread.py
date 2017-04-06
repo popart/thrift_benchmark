@@ -8,9 +8,10 @@ from echo import Echo
 from echo.ttypes import Packet
 
 from thrift import Thrift
-from thrift.transport import TSocket
+from thrift.transport import TSocket 
 from thrift.transport import TTransport
-from thrift.protocol import TBinaryProtocol
+from thrift.transport.TTransport import TFramedTransport
+from thrift.protocol import TBinaryProtocol, TCompactProtocol
 from thrift.server import TServer
 
 
@@ -19,7 +20,7 @@ class EchoHandler(object):
     c = {}
     x = None
 
-    def inc_count():
+    def inc_count(self):
         t = int(time.time() % 1000)
 
         if t not in self.c:
@@ -27,12 +28,13 @@ class EchoHandler(object):
 
         self.c[t] += 1
 
-    def noop(self):
-        inc_count()
+    def echo(self, s):
+        self.inc_count()
+        return s
 
     def add(self, p):
         x = p.workout_id 
-        inc_count()
+        self.inc_count()
 
     def count(self):
         return self.c
@@ -51,7 +53,10 @@ if __name__ == '__main__':
     server = TServer.TThreadPoolServer(processor, transport, tfactory, pfactory)
     server.setNumThreads(4)
     print "starting server"
-    server.serve()
+    try:
+        server.serve()
+    except (SystemExit, KeyboardInterrupt):
+        server.stop()
 
     # You could do one of these for a multithreaded server
     # server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)

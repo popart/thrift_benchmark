@@ -2,6 +2,7 @@ import sys
 sys.path.append('gen-py')
 
 from echo import Echo
+from echo.ttypes import Packet
 
 from thrift import Thrift
 from thrift.transport import TSocket
@@ -22,20 +23,18 @@ if __name__ == '__main__':
 
     # Create a client to use the protocol encoder
     client = Echo.Client(protocol)
-
+    print 'made a client'
     # Connect!
     transport.open()
+    print 'opened'
 
-    for n in [1000, 10000, 100000]:
-        client.reset()
+    client.reset()
 
-        for _ in xrange(n):
-            client.noop()
+    client.echo('hello world')
+    client.add(Packet(ride_id='ride_0', workout_id='workout_0', seconds_since_pedaling_start=10, total_work=5.0))
 
-        print "n: %s " % n
-
-        cs = client.count()
-        print sorted(cs.items())
+    cs = client.count()
+    print sorted(cs.items())
 
     transport.close()
 

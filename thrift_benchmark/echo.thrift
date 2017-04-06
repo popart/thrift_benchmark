@@ -27,7 +27,7 @@ struct Packet {
 
 service Echo {
 
-   void noop(),
+   string echo(string s),
    void add(Packet p),
    map<i16, i16> count(),
    bool reset()
