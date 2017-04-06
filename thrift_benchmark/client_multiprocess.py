@@ -41,18 +41,19 @@ def worker(rps):
             client.echo('hello world')
 
         elapsed = time.time() - start
-        if elapsed > 1:
-            return False
+        #if elapsed > 1:
+            #return False
 
-        time.sleep(1 - elapsed)
+        if elapsed < 1:
+            time.sleep(1 - elapsed)
 
     transport.close()
     return True
 
 if __name__ == '__main__':
 
-    for n in xrange(1,4):
-        for rps in xrange(1000, 15000, 1000):
+    for n in xrange(2,3):
+        for rps in xrange(1000, 10000, 1000):
             # reset the server counts
             client, transport = create_client()
             transport.open()

@@ -1,3 +1,6 @@
+from gevent import monkey
+monkey.patch_all()
+
 import sys
 sys.path.append('gen-py')
 
@@ -10,6 +13,7 @@ from echo.ttypes import Packet
 from thrift import Thrift
 from thrift.transport import TSocket 
 from thrift.transport import TTransport
+from thrift.transport.TTransport import TFramedTransport
 from thrift.protocol import TBinaryProtocol, TCompactProtocol
 from thrift.server import TServer
 

@@ -11,7 +11,7 @@ from thrift import Thrift
 from thrift.transport import TSocket 
 from thrift.transport import TTransport
 from thrift.transport.TTransport import TFramedTransport
-from thrift.protocol import TBinaryProtocol, TCompactProtocol
+from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 
 
@@ -21,7 +21,7 @@ class EchoHandler(object):
     x = None
 
     def inc_count(self):
-        t = int(time.time() % 1000)
+        t = int(time.time()) & 1023
 
         if t not in self.c:
             self.c[t] = 0
