@@ -14,19 +14,24 @@ from thrift.transport.TTransport import TFramedTransport
 from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 
+from threading import Lock
+
 
 
 class EchoHandler(object):
     c = {}
     x = None
+    lock = Lock()
 
     def inc_count(self):
+        self.lock.acquire()
         t = int(time.time()) & 1023
 
         if t not in self.c:
             self.c[t] = 0
 
         self.c[t] += 1
+        self.lock.release()
 
     def echo(self, s):
         self.inc_count()
